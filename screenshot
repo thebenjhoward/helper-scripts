@@ -1,0 +1,6 @@
+#!/bin/sh
+
+dte=$(date "+%Y%M%d-%H%M%S%3N")
+filename="screenshot_$dte.jpg"
+
+import -window root "$HOME/Pictures/screenshots/$filename"

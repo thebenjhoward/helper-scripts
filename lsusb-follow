@@ -1,0 +1,67 @@
+#!/bin/python
+from time import sleep
+import os
+from shutil import which
+from sys import argv
+
+delay = 5.0
+
+if(os.name != 'posix'):
+    print("This utility is only for posix based systems")
+    exit(1)
+
+if(which('lsusb') is None):
+    print("lsusb not found in path")
+    exit(1)
+
+if(len(argv) > 2):
+    print("too many arguments")
+    exit(1)
+elif(len(argv) == 2):
+    try:
+        delay = float(argv[1])
+    except:
+        print("USAGE: lsusb-follow [-h]|[DELAY]")
+        print("\t-h: display this help message")
+        print("\tDELAY: How long in seconds to wait between each poll (default: 5)")
+        print("\t       (Note: DELAY is a float)")
+        exit(0)
+
+def poll():
+    stream = os.popen("lsusb")
+    lines = [ x.strip() for x in stream.readlines() ]
+
+    return lines
+
+def compare_poll(old, new):
+    new_devices = []
+    for line in new:
+        if(line not in old):
+            new_devices.append(line)
+    return new_devices
+
+def print_poll(new, new_devs, old_len):
+    start_str = ""
+    nls = ""
+    if(old_len != 0):
+        for i in range(old_len):
+            start_str += "\033[A\033[K"
+            #nls += "\n"
+        #start_str = start_str + nls + start_str
+    
+    print(start_str, end="")
+    for line in new:
+        if(line in new_devs):
+            print("\033[32m" + line + "\033[0m")
+        else:
+            print(line)
+
+curr = poll()
+print_poll(curr, [], 0)
+
+while True:
+    sleep(delay)
+    new = poll()
+    new_devs = compare_poll(curr, new)
+    print_poll(new, new_devs, len(curr))
+    curr = new
