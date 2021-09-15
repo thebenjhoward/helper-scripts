@@ -1,0 +1,13 @@
+#!/bin/bash
+
+pids=($(ps aux | grep -E '[0-9]+:[0-9]{2,}\s*polybar' | grep -oE "$(whoami)"'\s*[0-9]{3,}' | grep -oE '[0-9]*'))
+names=($(ps aux | grep -oE '[0-9]+:[0-9]{2,}\s*polybar.*$' | grep -oE 'polybar.*$'))
+
+for i in "${!pids[@]}"; do
+    name="${names[$(expr 2 '*' $i)]} ${names[$(expr 2 '*' $i + 1)]}"
+    echo "killing and restarting '$name' with pid ${pids[$i]}"
+    kill ${pids[$i]}
+    $name > /dev/null 2>&1 & 
+done
+
+
